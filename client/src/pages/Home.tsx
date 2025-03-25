@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const [semester, setSemester] = useState<string>("");
-  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>([]);
+  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>(
+    []
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,7 +61,11 @@ const Home: React.FC = () => {
       return;
     }
 
-    if (subjects.some((subject) => subject.name.trim() === "" || subject.marks.trim() === "")) {
+    if (
+      subjects.some(
+        (subject) => subject.name.trim() === "" || subject.marks.trim() === ""
+      )
+    ) {
       alert("All subjects must have a valid name and marks.");
       return;
     }
@@ -103,7 +109,9 @@ const Home: React.FC = () => {
               {/* Dynamic Subject Fields */}
               {subjects.map((subject, index) => (
                 <div key={index} className="flex flex-col">
-                  <label className="text-gray-700 font-medium">Subject {index + 1}:</label>
+                  <label className="text-gray-700 font-medium">
+                    Subject {index + 1}:
+                  </label>
                   <input
                     type="text"
                     value={subject.name}
@@ -132,16 +140,14 @@ const Home: React.FC = () => {
                   subjects.length >= 5
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-500 text-white hover:bg-green-600"
-                }`}
-              >
+                }`}>
                 + Add Subject
               </button>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-              >
+                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
                 Submit Marks
               </button>
             </form>
