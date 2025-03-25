@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { handleSuccess } from "../utils"; // Adjust the path if needed
-import { handleError } from "../utils"; // Adjust the path if needed
+import { handleSuccess } from "../utils/utils.tsx"; // Adjust the path if needed
+import { handleError } from "../utils/utils.tsx"; // Adjust the path if needed
 import { ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -48,7 +48,7 @@ export default function Signup() {
         handleError(message);
       }
       console.log(result);
-    } catch (error) {
+    } catch (error: any) {
       handleError(error);
     }
   };
