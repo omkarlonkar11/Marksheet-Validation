@@ -3,6 +3,7 @@ const app=express();
 const  bodyParser=require('body-parser')
 const cors= require('cors'); 
 const AutherRouter=require('./Routes/AuthRouter')
+const PosterRouter=require('./Routes/DataRoute');
 
 
 require('dotenv').config();
@@ -16,10 +17,7 @@ const PORT=process.env.PORT || 8080;
 app.use(bodyParser.json());
 app.use(cors());
 app.use('/auth', AutherRouter);
-
-app.get('/ping' , (req , res)=>{
-    res.send('PONG');
-})
+app.use('/semester' , PosterRouter);
 app.listen(PORT , ()=>{
     console.log(`Server is listening on ${PORT}`);
 })

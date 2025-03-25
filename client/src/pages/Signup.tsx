@@ -16,7 +16,6 @@ export default function Signup() {
 
   const handleChange =(e)=>{
       const {name , value} = e.target ;
-      console.log(name , value);
       const copysignupInfo ={  ...signupInfo  };
       copysignupInfo[name]=value;
       setsignupInfo(copysignupInfo);
@@ -53,7 +52,6 @@ export default function Signup() {
     {
       handleError(message);
     }
-    console.log(result);
     } catch (error) {
       handleError(error);
     }

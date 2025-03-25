@@ -12,7 +12,6 @@ export default function Login() {
 
   const handleChange =(e)=>{
       const {name , value} = e.target ;
-      console.log(name , value);
       const copyloginInfo ={  ...loginInfo  };
       copyloginInfo[name]=value;
       setloginInfo(copyloginInfo);
@@ -33,12 +32,13 @@ export default function Login() {
         body:JSON.stringify(loginInfo)
     });
     const result=await response.json();
-    const {success , message , jwtToken, name ,error}= result;
+    const {success , message , jwtToken, name ,error , email}= result;
     if(success)
     {
        handleSuccess(message);
        localStorage.setItem('token' , jwtToken);
        localStorage.setItem('loggedInUser', name);
+       localStorage.setItem('email' , email);
        setTimeout(()=>{
         navigate('/home');
        } , 1000)
@@ -51,7 +51,6 @@ export default function Login() {
     {
       handleError(message);
     }
-    console.log(result);
     } catch (error) {
       handleError(error);
     }
