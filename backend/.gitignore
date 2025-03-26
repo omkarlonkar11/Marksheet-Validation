@@ -4,3 +4,5 @@
 .env.development
 .env.production
 .env.test
+node_modules
+.env

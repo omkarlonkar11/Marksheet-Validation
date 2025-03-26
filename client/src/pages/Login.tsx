@@ -1,75 +1,77 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleError , handleSuccess } from "../utils";
+import { handleError, handleSuccess } from "../utils/utils";
 import { ToastContainer } from "react-toastify";
+
 export default function Login() {
-  const [loginInfo , setloginInfo]=useState({
-    email:"",
-    password:""
-  })
+  const [loginInfo, setLoginInfo] = useState({
+    email: "",
+    password: "",
+  });
 
   const navigate = useNavigate();
 
-  const handleChange =(e)=>{
-      const {name , value} = e.target ;
-      const copyloginInfo ={  ...loginInfo  };
-      copyloginInfo[name]=value;
-      setloginInfo(copyloginInfo);
-  }
-  const handlelogin = async (e) =>{
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const {email , password}=loginInfo;
-    if(!email || !password){
-      return handleError('Email or Password are not Provided')
+    const { email, password } = loginInfo;
+    if (!email || !password) {
+      return handleError("Email or Password are not Provided");
     }
     try {
-      const url="http://localhost:8080/auth/login";
-      const response= await fetch(url ,{
-        method:"POST",
-        headers:{
-          'Content-Type':'application/json'
+      const url = "http://localhost:8080/auth/login";
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body:JSON.stringify(loginInfo)
-    });
-    const result=await response.json();
-    const {success , message , jwtToken, name ,error , email}= result;
-    if(success)
-    {
-       handleSuccess(message);
-       localStorage.setItem('token' , jwtToken);
-       localStorage.setItem('loggedInUser', name);
-       localStorage.setItem('email' , email);
-       setTimeout(()=>{
-        navigate('/home');
-       } , 1000)
-    }
-    else if(error){
-      const details =error?.details[0].message;
-      handleError(details);
-    }
-    else if(!success)
-    {
-      handleError(message);
-    }
+        body: JSON.stringify(loginInfo)
+      });
+      const result = await response.json();
+      const { success, message, jwtToken, name, error, email: userEmail } = result;
+      
+      if (success) {
+        handleSuccess(message);
+        localStorage.setItem('token', jwtToken);
+        localStorage.setItem('loggedInUser', name);
+        localStorage.setItem('email', userEmail);
+        setTimeout(() => {
+          navigate('/home');
+        }, 1000);
+      } else if (error) {
+        const details = error?.details?.[0]?.message || error.message || "Login failed";
+        handleError(details);
+      } else {
+        handleError(message || "Login failed");
+      }
     } catch (error) {
-      handleError(error);
+      handleError((error as Error).message || "An error occurred during login");
     }
-  }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg">
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
           Login
         </h2>
-        <form   onSubmit={handlelogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-gray-600 text-sm font-medium mb-1">
               Email
             </label>
             <input
-            onChange={handleChange}
+              onChange={handleChange}
               type="email"
               name="email"
+              autoComplete="email"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your email"
               value={loginInfo.email}
@@ -80,9 +82,10 @@ export default function Login() {
               Password
             </label>
             <input
-            onChange={handleChange}
+              onChange={handleChange}
               type="password"
               name="password"
+              autoComplete="current-password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your password"
               value={loginInfo.password}
@@ -102,7 +105,7 @@ export default function Login() {
           </a>
         </p>
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import { handleError, handleSuccess } from "../utils";
+import { handleError, handleSuccess } from "../utils/utils";
 
 const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
@@ -12,7 +12,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const user = localStorage.getItem("loggedInUser");
-    const useremail = localStorage.getItem('email');
+    const useremail = localStorage.getItem("email");
     if (!user) {
       navigate("/login");
     } else {
@@ -31,7 +31,6 @@ const Home: React.FC = () => {
   };
 
   const handleSubjectChange = (index: number, value: string) => {
-    // Check for duplicate subjects (case-insensitive)
     const isDuplicate = subjects.some(
       (subject, i) => 
         i !== index && 
@@ -77,7 +76,6 @@ const Home: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
-    // Validation checks (same as before)
     const subjectNames = subjects.map(subject => subject.name.trim().toLowerCase());
     const uniqueSubjects = new Set(subjectNames);
     if (uniqueSubjects.size !== subjects.length) {
@@ -119,18 +117,14 @@ const Home: React.FC = () => {
       const responseData = await response.json();
   
       if (!response.ok) {
-        // If the server returned an error message, use that
-        // if (responseData.message) {
-        //   throw new Error(responseData.message);
-        // }
-        handleError(responseData.message);
-        throw new Error('Marks for Semister Already Exist');
+        handleError(responseData.message || "Marks for Semester Already Exist");
+        return;
       }
   
       handleSuccess("Marks entered successfully");
     } catch (error) {
       console.error("Error submitting marks:", error);
-      handleError(error.message || "Failed to submit marks. Please try again.");
+      handleError((error as Error).message || "Failed to submit marks. Please try again.");
     }
   };
 
@@ -139,7 +133,7 @@ const Home: React.FC = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <div>
           <h2 className="text-2xl font-semibold text-center mb-4">
-            Welcome, {loggedinEmail} 
+            Welcome, {loggedInUser || "Guest"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
