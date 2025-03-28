@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleError, handleSuccess } from "../utils/utils";
 import { ToastContainer } from "react-toastify";
@@ -11,11 +11,18 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const user = localStorage.getItem("loggedInUser");
+    if (user) {
+      navigate("/home");
+    }
+  }, [navigate]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setLoginInfo(prev => ({
+    setLoginInfo((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -32,21 +39,29 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginInfo)
+        body: JSON.stringify(loginInfo),
       });
       const result = await response.json();
-      const { success, message, jwtToken, name, error, email: userEmail } = result;
-      
+      const {
+        success,
+        message,
+        jwtToken,
+        name,
+        error,
+        email: userEmail,
+      } = result;
+
       if (success) {
         handleSuccess(message);
-        localStorage.setItem('token', jwtToken);
-        localStorage.setItem('loggedInUser', name);
-        localStorage.setItem('email', userEmail);
+        localStorage.setItem("token", jwtToken);
+        localStorage.setItem("loggedInUser", name);
+        localStorage.setItem("email", userEmail);
         setTimeout(() => {
-          navigate('/home');
+          navigate("/home");
         }, 1000);
       } else if (error) {
-        const details = error?.details?.[0]?.message || error.message || "Login failed";
+        const details =
+          error?.details?.[0]?.message || error.message || "Login failed";
         handleError(details);
       } else {
         handleError(message || "Login failed");
@@ -93,8 +108,7 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-300"
-          >
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-300">
             Login
           </button>
         </form>

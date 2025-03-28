@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { handleSuccess } from "../utils/utils";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Wallet from "../pages/Wallet";
+import { connectWallet } from "../utils/ConnectWallet";
 
 export default function Navbar() {
   const isLoggedIn = localStorage.getItem("token"); // Check if the user is logged in
@@ -19,11 +19,18 @@ export default function Navbar() {
     <nav className="bg-blue-600 p-4 shadow-md">
       <div className="container mx-auto flex justify-end space-x-4">
         {isLoggedIn ? (
-          <button
-            onClick={handleLogout}
-            className="text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
-            Logout
-          </button>
+          <div>
+            <button
+              className="text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300"
+              onClick={connectWallet}>
+              Connect Wallet
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+              Logout
+            </button>
+          </div>
         ) : (
           <>
             <Link
@@ -36,7 +43,6 @@ export default function Navbar() {
               className="text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
               Signup
             </Link>
-            <Wallet />
           </>
         )}
       </div>

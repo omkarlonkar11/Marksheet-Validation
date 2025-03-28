@@ -6,7 +6,9 @@ import { handleError, handleSuccess } from "../utils/utils";
 const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const [semester, setSemester] = useState<string>("");
-  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>([]);
+  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>(
+    []
+  );
   const navigate = useNavigate();
   const [loggedinEmail, setLoggedinEmail] = useState<string | null>(null);
 
@@ -32,8 +34,8 @@ const Home: React.FC = () => {
 
   const handleSubjectChange = (index: number, value: string) => {
     const isDuplicate = subjects.some(
-      (subject, i) => 
-        i !== index && 
+      (subject, i) =>
+        i !== index &&
         subject.name.trim().toLowerCase() === value.trim().toLowerCase()
     );
 
@@ -42,7 +44,7 @@ const Home: React.FC = () => {
       return;
     }
 
-    setSubjects(prev => {
+    setSubjects((prev) => {
       const updated = [...prev];
       updated[index].name = value;
       return updated;
@@ -57,7 +59,7 @@ const Home: React.FC = () => {
         return;
       }
 
-      setSubjects(prev => {
+      setSubjects((prev) => {
         const updated = [...prev];
         updated[index].marks = value;
         return updated;
@@ -75,56 +77,67 @@ const Home: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    const subjectNames = subjects.map(subject => subject.name.trim().toLowerCase());
+
+    const subjectNames = subjects.map((subject) =>
+      subject.name.trim().toLowerCase()
+    );
     const uniqueSubjects = new Set(subjectNames);
     if (uniqueSubjects.size !== subjects.length) {
-      handleError("Duplicate subjects found. Please remove duplicates before submitting.");
+      handleError(
+        "Duplicate subjects found. Please remove duplicates before submitting."
+      );
       return;
     }
-  
+
     if (!semester) {
       handleError("Please select a semester");
       return;
     }
-  
+
     if (subjects.length !== 5) {
       handleError("Enter exactly 5 subjects before submitting");
       return;
     }
-  
-    if (subjects.some(subject => subject.name.trim() === "" || subject.marks.trim() === "")) {
+
+    if (
+      subjects.some(
+        (subject) => subject.name.trim() === "" || subject.marks.trim() === ""
+      )
+    ) {
       handleError("All subjects must have a valid name and marks");
       return;
     }
-  
-    const data = { 
+
+    const data = {
       email: loggedinEmail,
       semesterNumber: Number(semester),
-      subjects: subjects.map(subject => ({
+      subjects: subjects.map((subject) => ({
         name: subject.name.trim(),
-        marks: Number(subject.marks)
-      }))
+        marks: Number(subject.marks),
+      })),
     };
-  
+
     try {
+      console.log("Data to be sent:", data);
       const response = await fetch("http://localhost:8080/semester/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-  
+
       const responseData = await response.json();
-  
+
       if (!response.ok) {
         handleError(responseData.message || "Marks for Semester Already Exist");
         return;
       }
-  
+
       handleSuccess("Marks entered successfully");
     } catch (error) {
       console.error("Error submitting marks:", error);
-      handleError((error as Error).message || "Failed to submit marks. Please try again.");
+      handleError(
+        (error as Error).message || "Failed to submit marks. Please try again."
+      );
     }
   };
 
@@ -154,7 +167,9 @@ const Home: React.FC = () => {
 
             {subjects.map((subject, index) => (
               <div key={index} className="flex flex-col">
-                <label className="text-gray-700 font-medium">Subject {index + 1}:</label>
+                <label className="text-gray-700 font-medium">
+                  Subject {index + 1}:
+                </label>
                 <input
                   type="text"
                   value={subject.name}
@@ -184,15 +199,13 @@ const Home: React.FC = () => {
                 subjects.length >= 5
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-green-500 text-white hover:bg-green-600"
-              }`}
-            >
+              }`}>
               + Add Subject
             </button>
 
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-            >
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
               Submit Marks
             </button>
           </form>
