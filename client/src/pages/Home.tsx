@@ -9,8 +9,10 @@ const Home: React.FC = () => {
   const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>(
     []
   );
-  const navigate = useNavigate();
+  const [name, setName] = useState<string>("");
+  const [enrollmentNumber, setEnrollmentNumber] = useState<string>("");
   const [loggedinEmail, setLoggedinEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = localStorage.getItem("loggedInUser");
@@ -22,6 +24,14 @@ const Home: React.FC = () => {
       setLoggedinEmail(useremail);
     }
   }, [navigate]);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+
+  const handleEnrollmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEnrollmentNumber(e.target.value);
+  };
 
   const handleSemesterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -89,6 +99,16 @@ const Home: React.FC = () => {
       return;
     }
 
+    if (!name.trim()) {
+      handleError("Please enter your name");
+      return;
+    }
+
+    if (!enrollmentNumber.trim()) {
+      handleError("Please enter your enrollment number");
+      return;
+    }
+
     if (!semester) {
       handleError("Please select a semester");
       return;
@@ -110,6 +130,8 @@ const Home: React.FC = () => {
 
     const data = {
       email: loggedinEmail,
+      name: name.trim(),
+      enrollmentNumber: enrollmentNumber.trim(),
       semesterNumber: Number(semester),
       subjects: subjects.map((subject) => ({
         name: subject.name.trim(),
@@ -150,6 +172,34 @@ const Home: React.FC = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Enter Name:
+              </label>
+              <input
+                type="text"
+                value={name}
+                placeholder="Enter Your Name"
+                onChange={handleNameChange}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Enter Enrollment Number:
+              </label>
+              <input
+                type="text"
+                value={enrollmentNumber}
+                placeholder="I2K123456"
+                onChange={handleEnrollmentChange}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
             <div>
               <label className="block text-gray-700 font-medium mb-2">
                 Enter Semester:
