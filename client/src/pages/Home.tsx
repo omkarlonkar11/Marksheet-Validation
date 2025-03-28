@@ -7,8 +7,10 @@ const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const [semester, setSemester] = useState<string>("");
   const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>([]);
-  const navigate = useNavigate();
+  const [name, setName] = useState<string>("");
+  const [enrollmentNumber, setEnrollmentNumber] = useState<string>("");
   const [loggedinEmail, setLoggedinEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = localStorage.getItem("loggedInUser");
@@ -21,6 +23,14 @@ const Home: React.FC = () => {
     }
   }, [navigate]);
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+
+  const handleEnrollmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEnrollmentNumber(e.target.value);
+  };
+
   const handleSemesterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     if ((value > 0 && value < 9) || e.target.value === "") {
@@ -32,9 +42,8 @@ const Home: React.FC = () => {
 
   const handleSubjectChange = (index: number, value: string) => {
     const isDuplicate = subjects.some(
-      (subject, i) => 
-        i !== index && 
-        subject.name.trim().toLowerCase() === value.trim().toLowerCase()
+      (subject, i) =>
+        i !== index && subject.name.trim().toLowerCase() === value.trim().toLowerCase()
     );
 
     if (isDuplicate) {
@@ -75,52 +84,64 @@ const Home: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const subjectNames = subjects.map(subject => subject.name.trim().toLowerCase());
     const uniqueSubjects = new Set(subjectNames);
     if (uniqueSubjects.size !== subjects.length) {
       handleError("Duplicate subjects found. Please remove duplicates before submitting.");
       return;
     }
-  
+
+    if (!name.trim()) {
+      handleError("Please enter your name");
+      return;
+    }
+
+    if (!enrollmentNumber.trim()) {
+      handleError("Please enter your enrollment number");
+      return;
+    }
+
     if (!semester) {
       handleError("Please select a semester");
       return;
     }
-  
+
     if (subjects.length !== 5) {
       handleError("Enter exactly 5 subjects before submitting");
       return;
     }
-  
+
     if (subjects.some(subject => subject.name.trim() === "" || subject.marks.trim() === "")) {
       handleError("All subjects must have a valid name and marks");
       return;
     }
-  
-    const data = { 
+
+    const data = {
       email: loggedinEmail,
+      name: name.trim(),
+      enrollmentNumber: enrollmentNumber.trim(),
       semesterNumber: Number(semester),
       subjects: subjects.map(subject => ({
         name: subject.name.trim(),
         marks: Number(subject.marks)
       }))
     };
-  
+
     try {
       const response = await fetch("http://localhost:8080/semester/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-  
+
       const responseData = await response.json();
-  
+
       if (!response.ok) {
         handleError(responseData.message || "Marks for Semester Already Exist");
         return;
       }
-  
+
       handleSuccess("Marks entered successfully");
     } catch (error) {
       console.error("Error submitting marks:", error);
@@ -137,6 +158,34 @@ const Home: React.FC = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Enter Name:
+              </label>
+              <input
+                type="text"
+                value={name}
+                placeholder="Enter Your Name"
+                onChange={handleNameChange}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Enter Enrollment Number:
+              </label>
+              <input
+                type="text"
+                value={enrollmentNumber}
+                placeholder = "I2K123456"
+                onChange={handleEnrollmentChange}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
             <div>
               <label className="block text-gray-700 font-medium mb-2">
                 Enter Semester:
@@ -181,18 +230,13 @@ const Home: React.FC = () => {
               onClick={addSubject}
               disabled={subjects.length >= 5}
               className={`w-full py-2 rounded-lg transition ${
-                subjects.length >= 5
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-500 text-white hover:bg-green-600"
+                subjects.length >= 5 ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600"
               }`}
             >
               + Add Subject
             </button>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-            >
+            <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
               Submit Marks
             </button>
           </form>

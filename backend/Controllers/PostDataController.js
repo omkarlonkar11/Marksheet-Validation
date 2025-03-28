@@ -18,11 +18,7 @@ const postdata = async (req, res) => {
     }
 
     // Check if semester already exists for this user
-    let semesterExists = await UserModel.findOne({ user: user._id, semesterNumber });
-
-    if (semesterExists) {
-      return res.status(409).json({ error: "Semester already exists. Cannot add duplicate semester." });
-    }
+   
 
     // If semester doesn't exist, add a new semester
     let newSemester = new UserModel({
