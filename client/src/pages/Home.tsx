@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { handleError, handleSuccess } from "../utils/utils";
+import { keccak256 } from "ethers";
+import { useWeb3Context } from "../contexts/Web3Context";
 
 const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
@@ -9,19 +11,18 @@ const Home: React.FC = () => {
   const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>(
     []
   );
+
+  const { web3State } = useWeb3Context();
   const [name, setName] = useState<string>("");
   const [enrollmentNumber, setEnrollmentNumber] = useState<string>("");
-  const [loggedinEmail, setLoggedinEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const user = localStorage.getItem("loggedInUser");
-    const useremail = localStorage.getItem("email");
     if (!user) {
       navigate("/login");
     } else {
       setLoggedInUser(user);
-      setLoggedinEmail(useremail);
     }
   }, [navigate]);
 
@@ -77,12 +78,35 @@ const Home: React.FC = () => {
     }
   };
 
+  function getGrade(marks: number): string {
+    if (marks >= 80 && marks <= 100) return "O";
+    else if (marks >= 70) return "A+";
+    else if (marks >= 60) return "A";
+    else if (marks >= 55) return "B+";
+    else if (marks >= 50) return "B";
+    else if (marks >= 45) return "C";
+    else if (marks >= 40) return "P";
+    else if (marks >= 0) return "F";
+    else return "Ab"; // If input is negative, consider absent
+  }
+
   const addSubject = () => {
     if (subjects.length < 5) {
       setSubjects([...subjects, { name: "", marks: "" }]);
     } else {
       handleError("You can add exactly 5 subjects");
     }
+  };
+
+  const generateKeccak256Hash = (data: object): string => {
+    const normalizedData = JSON.stringify(data, Object.keys(data).sort());
+
+    // Convert string to Uint8Array using TextEncoder
+    const encoder = new TextEncoder();
+    const encodedData = encoder.encode(normalizedData);
+
+    // Compute Keccak-256 hash
+    return keccak256(encodedData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,13 +153,12 @@ const Home: React.FC = () => {
     }
 
     const data = {
-      email: loggedinEmail,
       name: name.trim(),
       enrollmentNumber: enrollmentNumber.trim(),
       semesterNumber: Number(semester),
       subjects: subjects.map((subject) => ({
         name: subject.name.trim(),
-        marks: Number(subject.marks),
+        grade: getGrade(Number(subject.marks)),
       })),
     };
 
@@ -146,13 +169,32 @@ const Home: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
+      console.log(response);
       const responseData = await response.json();
 
       if (!response.ok) {
         handleError(responseData.message || "Marks for Semester Already Exist");
         return;
       }
+      const hash = generateKeccak256Hash(data);
+      console.log(hash);
+
+      if (!web3State.contractInstance) {
+        console.error("Contract is not initialized yet.");
+        return;
+      }
+
+      if (!web3State.contractInstance?.storeHash) {
+        console.error("storeHash method is undefined. Check contract ABI.");
+        return;
+      }
+
+      const tx = await web3State.contractInstance?.storeHash(
+        enrollmentNumber,
+        hash
+      );
+      await tx.wait(); // Wait for transaction confirmation
+      console.log("Transaction Successful:", tx);
 
       handleSuccess("Marks entered successfully");
     } catch (error) {

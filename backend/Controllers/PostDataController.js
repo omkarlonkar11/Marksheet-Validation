@@ -1,29 +1,23 @@
-const UserModel1 = require("../Models/user"); // Auth Model
 const UserModel = require("../Models/userdata"); // Semester Model
 
 const postdata = async (req, res) => {
   try {
-    const { email, semesterNumber, subjects } = req.body;
+    const { name, enrollmentNumber, semesterNumber, subjects } = req.body;
 
     // Validate required fields
-    if (!email || !semesterNumber || !subjects) {
+    if (!semesterNumber || !subjects || !name || !enrollmentNumber) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Find the user from authentication model
-    let user = await UserModel1.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Check if semester already exists for this user
-
+    // // Check if semester already exists for this user
+    console.log(req.body);
+    console.log(subjects);
     // If semester doesn't exist, add a new semester
     let newSemester = new UserModel({
+      name,
+      enrollmentNumber,
       semesterNumber,
       subjects,
-      user: user._id, // Reference to user
     });
 
     await newSemester.save();

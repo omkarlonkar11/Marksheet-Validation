@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const user = await UserModel.findOne({ email }); 
+    const user = await UserModel.findOne({ email });
     if (user) {
       return res.status(409).json({
         message: "User already exists , Login Directly",
@@ -48,7 +48,7 @@ const login = async (req, res) => {
       { expiresIn: "24h" }
     );
     res.status(200).json({
-      message: "Login Successfull",
+      message: "Login Successful",
       success: true,
       jwtToken,
       email,
