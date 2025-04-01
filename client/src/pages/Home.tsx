@@ -164,44 +164,60 @@ const Home: React.FC = () => {
 
     try {
       console.log("Data to be sent:", data);
-      const response = await fetch("http://localhost:8080/semester/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      console.log(response);
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        handleError(responseData.message || "Marks for Semester Already Exist");
-        return;
-      }
-      const hash = generateKeccak256Hash(data);
-      console.log(hash);
-
-      if (!web3State.contractInstance) {
-        console.error("Contract is not initialized yet.");
-        return;
-      }
-
-      if (!web3State.contractInstance?.storeHash) {
-        console.error("storeHash method is undefined. Check contract ABI.");
-        return;
-      }
-
-      const tx = await web3State.contractInstance?.storeHash(
-        enrollmentNumber,
-        hash
-      );
-      await tx.wait(); // Wait for transaction confirmation
-      console.log("Transaction Successful:", tx);
-
-      handleSuccess("Marks entered successfully");
+      
+      // Calculate grades from marks but don't store marks in localStorage
+      const studentData = {
+        name: name.trim(),
+        enrollmentNumber: enrollmentNumber.trim(),
+        semester: semester,
+        subjects: subjects.map((subject) => ({
+          name: subject.name.trim(),
+          grade: getGrade(Number(subject.marks)),
+        })),
+      };
+      
+      localStorage.setItem("studentData", JSON.stringify(studentData));
+      
+      // Calculate SGPA
+      const gradePoints = {
+        "O": 10,
+        "A+": 9,
+        "A": 8,
+        "B+": 7,
+        "B": 6,
+        "C": 5,
+        "P": 4,
+        "F": 0,
+        "Ab": 0
+      };
+      
+      // Get grade points from each subject's grade
+      const totalGradePoints = studentData.subjects.reduce((total, subject) => {
+        return total + gradePoints[subject.grade as keyof typeof gradePoints];
+      }, 0);
+      
+      const sgpa = (totalGradePoints / studentData.subjects.length).toFixed(2);
+      
+      localStorage.setItem("totalGradePoints", totalGradePoints.toString());
+      localStorage.setItem("sgpa", sgpa);
+      
+      // Skip backend submission entirely - just generate marksheet locally
+      handleSuccess("Marksheet generated successfully");
+      
+      // Always navigate to marksheet page
+      console.log("Navigating to marksheet page...");
+      navigate("/marksheet");
+      
     } catch (error) {
-      console.error("Error submitting marks:", error);
+      console.error("Error in submission process:", error);
       handleError(
-        (error as Error).message || "Failed to submit marks. Please try again."
+        (error as Error).message || "Failed to generate marksheet. Please try again."
       );
+      
+      // Even on error, try to navigate to marksheet if we have student data
+      if (localStorage.getItem("studentData")) {
+        navigate("/marksheet");
+      }
     }
   };
 
