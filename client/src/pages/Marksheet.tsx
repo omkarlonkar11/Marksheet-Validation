@@ -17,7 +17,7 @@ interface StudentData {
 export default function Marksheet() {
   const [student, setStudent] = useState<StudentData | null>(null);
   const [totalGradePoints, setTotalGradePoints] = useState<string>("0");
-  const [sgpa, setSgpa] = useState<string>("0");
+  const [sgpa, setSgpa] = useState<string>("-");
   const [overallGrade, setOverallGrade] = useState<string>("");
   const navigate = useNavigate();
 
@@ -35,6 +35,10 @@ export default function Marksheet() {
     const totalGradePointsStr = localStorage.getItem("totalGradePoints");
     const sgpaStr = localStorage.getItem("sgpa");
     
+    localStorage.removeItem("studentData");
+    localStorage.removeItem("totalGradePoints");
+    localStorage.removeItem("sgpa");
+
     if (!studentDataStr) {
       // If no data found, redirect to home page
       navigate("/home");
@@ -191,7 +195,7 @@ export default function Marksheet() {
               </div>
               <div className="bg-gray-50 p-3 rounded">
                 <p className="text-gray-600 font-medium text-sm">Semester GPA (SGPA)</p>
-                <p className="text-gray-900 text-xl font-medium mt-1">{sgpa}</p>
+                <p className="text-gray-900 text-xl font-medium mt-1">{sgpa == '0' ? '-' : sgpa}</p>
               </div>
               <div className="bg-gray-50 p-3 rounded">
                 <p className="text-gray-600 font-medium text-sm">Overall Grade</p>
