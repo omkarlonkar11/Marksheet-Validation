@@ -18,9 +18,11 @@
     "axios": "^1.8.4",
     "cors": "^2.8.5",
     "ethers": "^6.13.5",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
+    "react-qr-code": "^2.0.15",
     "react-router-dom": "^7.4.0",
     "react-toastify": "^11.0.5",
     "web-vitals": "^4.2.4"

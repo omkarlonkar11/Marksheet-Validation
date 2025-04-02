@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import QRCode from "react-qr-code";
+import { generateQrCodeData, storeMarksheetHashOnBlockchain } from "../utils/blockchain";
+import { useWeb3Context } from "../contexts/Web3Context";
+import { toast } from "react-hot-toast";
 
 interface Subject {
   name: string;
@@ -19,7 +23,10 @@ export default function Marksheet() {
   const [totalGradePoints, setTotalGradePoints] = useState<string>("0");
   const [sgpa, setSgpa] = useState<string>("-");
   const [overallGrade, setOverallGrade] = useState<string>("");
+  const [qrCodeData, setQrCodeData] = useState<string>("");
+  const [isRecordingOnBlockchain, setIsRecordingOnBlockchain] = useState(false);
   const navigate = useNavigate();
+  const { web3State } = useWeb3Context();
 
   // Get current date for the marksheet
   const currentDate = new Date();
@@ -48,6 +55,12 @@ export default function Marksheet() {
     const studentData = JSON.parse(studentDataStr);
     setStudent(studentData);
     
+    // Generate QR code data for blockchain verification
+    if (studentData.enrollmentNumber && studentData.semester) {
+      const qrData = generateQrCodeData(studentData.enrollmentNumber, studentData.semester);
+      setQrCodeData(qrData);
+    }
+    
     if (totalGradePointsStr) {
       setTotalGradePoints(totalGradePointsStr);
     }
@@ -69,6 +82,35 @@ export default function Marksheet() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Function to record the marksheet on the blockchain
+  const recordOnBlockchain = async () => {
+    if (!student) return;
+    
+    setIsRecordingOnBlockchain(true);
+    
+    try {
+      if (!web3State.contractInstance || !web3State.selectedAccount) {
+        toast.error("Please connect your wallet first");
+        return;
+      }
+      
+      const result = await storeMarksheetHashOnBlockchain(
+        web3State.contractInstance,
+        student.enrollmentNumber,
+        student.semester
+      );
+      
+      if (result) {
+        toast.success("Marksheet successfully recorded on blockchain");
+      }
+    } catch (error) {
+      console.error("Error recording on blockchain:", error);
+      toast.error("Failed to record on blockchain");
+    } finally {
+      setIsRecordingOnBlockchain(false);
+    }
   };
 
   if (!student) {
@@ -224,6 +266,23 @@ export default function Marksheet() {
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-300 bg-gray-50">
+          {/* QR Code for Blockchain Verification */}
+          <div className="flex flex-col">
+            <div className="mb-2">
+              {qrCodeData && (
+                <div>
+                  <QRCode
+                    value={qrCodeData}
+                    size={100}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                    level="H"
+                  />
+                  <p className="text-gray-600 text-xs mt-1">Blockchain Verification</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
           {/* Signature Block */}
           <div className="flex flex-col">
             <div className="h-16"></div>
@@ -238,12 +297,25 @@ export default function Marksheet() {
             </div>
           </div>
           
-          {/* Print Button */}
-          <button 
-            onClick={handlePrint}
-            className="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded-md shadow-sm text-sm print:hidden">
-            Print Marksheet
-          </button>
+          {/* Buttons */}
+          <div className="flex flex-col space-y-2 print:hidden">
+            <button 
+              onClick={handlePrint}
+              className="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded-md shadow-sm text-sm">
+              Print Marksheet
+            </button>
+            
+            <button 
+              onClick={recordOnBlockchain}
+              disabled={isRecordingOnBlockchain}
+              className={`${
+                isRecordingOnBlockchain 
+                  ? "bg-blue-400 cursor-not-allowed" 
+                  : "bg-blue-600 hover:bg-blue-700"
+              } text-white px-6 py-2 rounded-md shadow-sm text-sm`}>
+              {isRecordingOnBlockchain ? "Recording..." : "Record on Blockchain"}
+            </button>
+          </div>
         </div>
         
         {/* Important Note */}
