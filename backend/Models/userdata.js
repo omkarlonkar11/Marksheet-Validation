@@ -10,6 +10,6 @@ const SemesterSchema = new mongoose.Schema({
   enrollmentNumber: { type: String, required: true },
   semesterNumber: { type: Number, required: true },
   subjects: [SubjectSchema],
-});
+}); 
 
 module.exports = mongoose.model("Semester", SemesterSchema);

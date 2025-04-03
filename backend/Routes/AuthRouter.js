@@ -1,4 +1,3 @@
-const { models } = require('mongoose');
 const { signupValidation, LoginValidation } = require('../MIddlewares/AuthValidation');
 const { signup, login } = require('../Controllers/AuthController');
 

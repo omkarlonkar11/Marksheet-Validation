@@ -3,6 +3,8 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
+import Marksheet from "./pages/Marksheet";
+import VerifyMarksheet from "./pages/VerifyMarksheet";
 import "react-toastify/ReactToastify.css";
 
 export default function App() {
@@ -14,6 +16,11 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/marksheet" element={<Marksheet />} />
+        <Route
+          path="/verify/:enrollmentNumber/:semesterNumber"
+          element={<VerifyMarksheet />}
+        />
       </Routes>
     </Router>
   );

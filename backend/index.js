@@ -2,9 +2,9 @@ const express = require('express');
 const app=express();
 const  bodyParser=require('body-parser')
 const cors= require('cors'); 
-const AutherRouter=require('./Routes/AuthRouter')
+const AutherRouter=require('./Routes/AuthRouter');
 const PosterRouter=require('./Routes/DataRoute');
-
+const DataRouter=require('./Routes/SemesterRoute');
 
 require('dotenv').config();
 require('./Models/db');
@@ -18,6 +18,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use('/auth', AutherRouter);
 app.use('/semester' , PosterRouter);
+app.use('/verify' ,DataRouter);
 app.listen(PORT , ()=>{
     console.log(`Server is listening on ${PORT}`);
 })
