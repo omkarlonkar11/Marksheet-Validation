@@ -17,7 +17,10 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/home" element={<Home />} />
         <Route path="/marksheet" element={<Marksheet />} />
-        <Route path="/verify" element={<VerifyMarksheet />} />
+        <Route
+          path="/verify/:enrollmentNumber/:semesterNumber"
+          element={<VerifyMarksheet />}
+        />
       </Routes>
     </Router>
   );
