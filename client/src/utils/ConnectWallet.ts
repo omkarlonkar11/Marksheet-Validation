@@ -36,7 +36,7 @@ export const connectWallet = async (): Promise<
     );
     const signer = await provider.getSigner();
     const contractAddress: string =
-      "0xf3E248Ad8c33b749306aa8e69c1227a53087bA3c";
+      "0xd290eAcA58e1cCB27E66Be5DCa493773d603c9b7";
     const contractInstance: Contract = new ethers.Contract(
       contractAddress,
       contractAbi,

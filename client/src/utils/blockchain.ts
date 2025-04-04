@@ -1,5 +1,12 @@
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
+import { connectWallet } from "./ConnectWallet";
+import contractAbi from "../constants/ContractABI.json";
+
+const PUBLIC_RPC_URL =
+  "https://sepolia.infura.io/v3/43566bffdb114ef4b0047262fa4ba52d";
+
+const contractAddress: string = "0xd290eAcA58e1cCB27E66Be5DCa493773d603c9b7";
 
 // Function to generate a hash from enrollment number and semester
 export const generateMarksheetHash = (
@@ -37,7 +44,9 @@ export const storeMarksheetHashOnBlockchain = async (
   semester: string
 ): Promise<boolean> => {
   if (!contractInstance) {
+    connectWallet();
     toast.error("Blockchain connection not available");
+
     return false;
   }
 
@@ -57,6 +66,57 @@ export const storeMarksheetHashOnBlockchain = async (
   } catch (error) {
     console.error("Error storing hash on blockchain:", error);
     toast.error("Failed to record marksheet on blockchain");
+    return false;
+  }
+};
+
+export const verifyHashFromBlockchain = async (
+  enrollmentNumber: string,
+  semesterNumber: string,
+  backendHash: string
+): Promise<boolean> => {
+  console.log("INSIDE VERIFICATION FUNCTION");
+
+  try {
+    const provider = new ethers.JsonRpcProvider(PUBLIC_RPC_URL);
+
+    // ✅ Connect to the contract
+    const contract = new ethers.Contract(
+      contractAddress,
+      contractAbi,
+      provider
+    );
+
+    // ✅ Generate the student ID correctly
+    const studentId = `${enrollmentNumber.trim()}-${semesterNumber.trim()}`;
+
+    // ✅ Fetch stored hash from blockchain
+
+    const storedHash = await contract.getStoredHash(studentId);
+
+    console.log("🔹 Stored Hash from Blockchain:", storedHash);
+    console.log("🔹 Backend Hash from API:", backendHash);
+
+    // ✅ Check if hash exists
+    if (!storedHash || storedHash === "") {
+      console.error("❌ No hash found on the blockchain!");
+      toast.error("No hash found on the blockchain.");
+      return false;
+    }
+
+    // ✅ Compare hashes correctly
+    if (storedHash !== backendHash) {
+      console.error("❌ Hashes do not match! Verification failed.");
+      toast.error("Document verification failed.");
+      return false;
+    }
+
+    console.log("✅ Marksheet verification successful!");
+    toast.success("Marksheet verified successfully!");
+    return true;
+  } catch (error) {
+    console.error("Error fetching hash from blockchain:", error);
+    toast.error("Failed to retrieve hash from blockchain.");
     return false;
   }
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { generateMarksheetHash } from "../utils/blockchain";
+import { verifyHashFromBlockchain } from "../utils/blockchain";
 import { toast } from "react-hot-toast";
 
 interface Subject {
@@ -47,13 +47,17 @@ export default function VerifyMarksheet() {
 
         const data = await response.json();
 
-        // Generate a hash from received semester data
-        const generatedHash = generateMarksheetHash(
+        console.log("Before calling blockchain response");
+
+        const blockchainResponse = await verifyHashFromBlockchain(
           String(enrollmentNumber),
-          String(semesterNumber) // Ensure semesterNumber is a string
+          String(semesterNumber), // Ensure semesterNumber is a string
+          String(data.hash)
         );
 
-        if (generatedHash === data.hash) {
+        console.log("Blockchain Response:", blockchainResponse);
+
+        if (blockchainResponse) {
           setSemesterData(data.semesterData);
           console.log(data.semesterData);
           setIsVerified(true);
