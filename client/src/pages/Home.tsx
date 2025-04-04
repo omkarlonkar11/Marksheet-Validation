@@ -1,15 +1,32 @@
+
+
+// Predefined subjects for each semester
+
+
+
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { handleError, handleSuccess } from "../utils/utils";
 
+// Predefined subjects for each semester
+const subjectOptions: Record<string, string[]> = {
+  "1": ["Mathematics I", "Electronics", "Chemistry", "Mechanical Engineering", "Programming"],
+  "2": ["Mathematics II", "Physics", "Electrical", "Mechanics", "Graphics"],
+  "3": ["Dicrete Mathematics", "Data Structures", "Logic Design and Computer Organization", "Object Oriented Programming", "Basics of Computer Network"],
+  "4": ["Mathematics- III ", "Database Systems", "Processor Architecture", "Software Engineering", "Computer Graphics"],
+  "5": ["Theory of Computation", "Operating Systems ", "Machine Learning", "Human ComputerInteraction", "Adv Data Structures"],
+  "6": ["Computer Network and Security", "Data Science and Big Data Analytics", "Cloud Computing", "Internship", "Web Application Development "],
+  "7": ["Deep Learning", "Software Project Management ", "Information and Storage Retrieval", "Internet of Things", "Quantum Computing"],
+  "8": ["Distributed Systems", "Software Defined Network", "Ethics in Technology", "Blockchain Technology", "Seminar"],
+};
+
 const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const [semester, setSemester] = useState<string>("");
-  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>(
-    []
-  );
-
+  // Each subject now contains a name (selected from dropdown) and marks
+  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>([]);
   const [name, setName] = useState<string>("");
   const [enrollmentNumber, setEnrollmentNumber] = useState<string>("");
   const navigate = useNavigate();
@@ -35,11 +52,14 @@ const Home: React.FC = () => {
     const value = parseInt(e.target.value, 10);
     if ((value > 0 && value < 9) || e.target.value === "") {
       setSemester(e.target.value);
+      // Reset subjects if semester changes
+      setSubjects([]);
     } else {
       handleError("Semester must be between 1 and 8!");
     }
   };
 
+  // Handle subject selection from the dropdown
   const handleSubjectChange = (index: number, value: string) => {
     const isDuplicate = subjects.some(
       (subject, i) =>
@@ -88,6 +108,10 @@ const Home: React.FC = () => {
   }
 
   const addSubject = () => {
+    if (!semester) {
+      handleError("Please select a semester first");
+      return;
+    }
     if (subjects.length < 5) {
       setSubjects([...subjects, { name: "", marks: "" }]);
     } else {
@@ -190,7 +214,6 @@ const Home: React.FC = () => {
         Ab: 0,
       };
 
-      // Get grade points from each subject's grade
       const totalGradePoints = studentData.subjects.reduce((total, subject) => {
         return total + gradePoints[subject.grade as keyof typeof gradePoints];
       }, 0);
@@ -200,10 +223,8 @@ const Home: React.FC = () => {
       localStorage.setItem("totalGradePoints", totalGradePoints.toString());
       localStorage.setItem("sgpa", sgpa);
 
-      // Skip backend submission entirely - just generate marksheet locally
       handleSuccess("Marksheet generated successfully");
 
-      // Always navigate to marksheet page
       console.log("Navigating to marksheet page...");
       navigate("/marksheet");
     } catch (error) {
@@ -213,7 +234,6 @@ const Home: React.FC = () => {
           "Failed to generate marksheet. Please try again."
       );
 
-      // Even on error, try to navigate to marksheet if we have student data
       if (localStorage.getItem("studentData")) {
         navigate("/marksheet");
       }
@@ -277,14 +297,22 @@ const Home: React.FC = () => {
                 <label className="text-gray-700 font-medium">
                   Subject {index + 1}:
                 </label>
-                <input
-                  type="text"
+                {/* Use a dropdown to select a subject based on the chosen semester */}
+                <select
                   value={subject.name}
                   onChange={(e) => handleSubjectChange(index, e.target.value)}
-                  placeholder="Enter Subject Name"
                   className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   required
-                />
+                >
+                  <option value="">--Select Subject--</option>
+                  {semester && subjectOptions[semester]
+                    ? subjectOptions[semester].map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))
+                    : null}
+                </select>
                 <input
                   type="number"
                   value={subject.marks}
@@ -306,13 +334,15 @@ const Home: React.FC = () => {
                 subjects.length >= 5
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-green-500 text-white hover:bg-green-600"
-              }`}>
+              }`}
+            >
               + Add Subject
             </button>
 
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+            >
               Submit Marks
             </button>
           </form>
