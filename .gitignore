@@ -1,1 +1,13 @@
-"backend/.env" 
+# Ignore environment files
+backend/.env
+backend/.env.example
+client/.env
+client/.env.example
+
+# Ignore node_modules folders
+backend/node_modules/
+client/node_modules/
+
+# Optional: ignore root .env files if any
+.env
+.env.example
