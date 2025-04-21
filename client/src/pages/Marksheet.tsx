@@ -305,7 +305,7 @@ export default function Marksheet() {
               {qrCodeData && (
                 <div>
                   <QRCode
-                    value={`localhost:5173/verify/${student.enrollmentNumber}/${student.semester}`}
+                    value={`https://marksheet-validation.pages.dev/verify/${student.enrollmentNumber}/${student.semester}`}
                     size={100}
                     style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                     level="H"
