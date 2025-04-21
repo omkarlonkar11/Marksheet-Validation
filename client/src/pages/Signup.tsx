@@ -25,30 +25,28 @@ export default function Signup() {
       return handleError("Either Name, Email or Password are not Provided");
     }
     try {
-      const url = "http://localhost:8080/auth/signup";
+      const url = `${import.meta.env.VITE_BACKEND_URL}/auth/signup`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(signupInfo)
+        body: JSON.stringify(signupInfo),
       });
       const result = await response.json();
       const { success, message, error } = result;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
-          navigate('/login');
+          navigate("/login");
         }, 1000);
-      }
-      else if (error) {
+      } else if (error) {
         const details = error?.details[0].message;
         handleError(details);
-      }
-      else if (!success) {
+      } else if (!success) {
         handleError(message);
       }
-    } catch (error:any) {
+    } catch (error: any) {
       handleError(error);
     }
   };

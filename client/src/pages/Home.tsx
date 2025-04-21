@@ -1,9 +1,4 @@
-
-
 // Predefined subjects for each semester
-
-
-
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,21 +7,65 @@ import { handleError, handleSuccess } from "../utils/utils";
 
 // Predefined subjects for each semester
 const subjectOptions: Record<string, string[]> = {
-  "1": ["Mathematics I", "Electronics", "Chemistry", "Mechanical Engineering", "Programming"],
+  "1": [
+    "Mathematics I",
+    "Electronics",
+    "Chemistry",
+    "Mechanical Engineering",
+    "Programming",
+  ],
   "2": ["Mathematics II", "Physics", "Electrical", "Mechanics", "Graphics"],
-  "3": ["Dicrete Mathematics", "Data Structures", "Logic Design and Computer Organization", "Object Oriented Programming", "Basics of Computer Network"],
-  "4": ["Mathematics- III ", "Database Systems", "Processor Architecture", "Software Engineering", "Computer Graphics"],
-  "5": ["Theory of Computation", "Operating Systems ", "Machine Learning", "Human ComputerInteraction", "Adv Data Structures"],
-  "6": ["Computer Network and Security", "Data Science and Big Data Analytics", "Cloud Computing", "Internship", "Web Application Development "],
-  "7": ["Deep Learning", "Software Project Management ", "Information and Storage Retrieval", "Internet of Things", "Quantum Computing"],
-  "8": ["Distributed Systems", "Software Defined Network", "Ethics in Technology", "Blockchain Technology", "Seminar"],
+  "3": [
+    "Dicrete Mathematics",
+    "Data Structures",
+    "Logic Design and Computer Organization",
+    "Object Oriented Programming",
+    "Basics of Computer Network",
+  ],
+  "4": [
+    "Mathematics- III ",
+    "Database Systems",
+    "Processor Architecture",
+    "Software Engineering",
+    "Computer Graphics",
+  ],
+  "5": [
+    "Theory of Computation",
+    "Operating Systems ",
+    "Machine Learning",
+    "Human ComputerInteraction",
+    "Adv Data Structures",
+  ],
+  "6": [
+    "Computer Network and Security",
+    "Data Science and Big Data Analytics",
+    "Cloud Computing",
+    "Internship",
+    "Web Application Development ",
+  ],
+  "7": [
+    "Deep Learning",
+    "Software Project Management ",
+    "Information and Storage Retrieval",
+    "Internet of Things",
+    "Quantum Computing",
+  ],
+  "8": [
+    "Distributed Systems",
+    "Software Defined Network",
+    "Ethics in Technology",
+    "Blockchain Technology",
+    "Seminar",
+  ],
 };
 
 const Home: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const [semester, setSemester] = useState<string>("");
   // Each subject now contains a name (selected from dropdown) and marks
-  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>([]);
+  const [subjects, setSubjects] = useState<{ name: string; marks: string }[]>(
+    []
+  );
   const [name, setName] = useState<string>("");
   const [enrollmentNumber, setEnrollmentNumber] = useState<string>("");
   const navigate = useNavigate();
@@ -186,11 +225,14 @@ const Home: React.FC = () => {
         })),
       };
 
-      const response = await fetch("http://localhost:8080/semester/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/semester/add`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
       console.log(response);
       const responseData = await response.json();
 
@@ -302,8 +344,7 @@ const Home: React.FC = () => {
                   value={subject.name}
                   onChange={(e) => handleSubjectChange(index, e.target.value)}
                   className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  required
-                >
+                  required>
                   <option value="">--Select Subject--</option>
                   {semester && subjectOptions[semester]
                     ? subjectOptions[semester].map((opt) => (
@@ -334,15 +375,13 @@ const Home: React.FC = () => {
                 subjects.length >= 5
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-green-500 text-white hover:bg-green-600"
-              }`}
-            >
+              }`}>
               + Add Subject
             </button>
 
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-            >
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
               Submit Marks
             </button>
           </form>

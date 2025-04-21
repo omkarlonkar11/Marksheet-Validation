@@ -35,7 +35,9 @@ export default function VerifyMarksheet() {
     async function fetchVerification() {
       try {
         const response = await fetch(
-          `http://localhost:8080/verify/${enrollmentNumber}/${semesterNumber}`
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/verify/${enrollmentNumber}/${semesterNumber}`
         );
 
         if (response.status === 404) {
