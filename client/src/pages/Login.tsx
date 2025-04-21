@@ -16,7 +16,26 @@ export default function Login() {
     if (user) {
       navigate("/home");
     }
+    
+    // Log the backend URL to verify it's correct
+    console.log("Backend URL:", import.meta.env.VITE_BACKEND_URL);
+    
+    // Test the API connection
+    testBackendConnection();
   }, [navigate]);
+  
+  // Function to test if backend is reachable
+  const testBackendConnection = async () => {
+    try {
+      console.log("Testing connection to backend...");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, {
+        method: "HEAD", // Just checking connection, not sending data
+      });
+      console.log("Backend response status:", response.status);
+    } catch (error) {
+      console.error("Backend connection test failed:", error);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,6 +53,8 @@ export default function Login() {
     }
     try {
       const url = `${import.meta.env.VITE_BACKEND_URL}/auth/login`;
+      console.log("Login request to URL:", url);
+      
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -41,7 +62,18 @@ export default function Login() {
         },
         body: JSON.stringify(loginInfo),
       });
+      
+      console.log("Login response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response text:", errorText);
+        throw new Error(`Server responded with status ${response.status}: ${errorText}`);
+      }
+      
       const result = await response.json();
+      console.log("Login result:", result);
+      
       const {
         success,
         message,
@@ -67,6 +99,7 @@ export default function Login() {
         handleError(message || "Login failed");
       }
     } catch (error) {
+      console.error("Login error details:", error);
       handleError((error as Error).message || "An error occurred during login");
     }
   };
