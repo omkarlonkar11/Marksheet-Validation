@@ -46,7 +46,9 @@ const processStudentData = (student: StudentData) => {
       ? (totalGradePoints / subjects.length).toFixed(2)
       : "0.00";
 
-  const qrCodeData = generateQrCodeData(student.marks);
+  // Generate a verification URL for the QR code instead of raw hash
+  const hash = generateMarksheetHash(student.marks);
+  const qrCodeData = `${VERIFIER_URL}/verify/${student.enrollmentNumber}/${student.semester}?hash=${hash}`;
 
   return { ...student, subjects, sgpa, qrCodeData };
 };

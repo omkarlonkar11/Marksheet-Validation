@@ -7,7 +7,9 @@ import {
   processBulkMarksheets,
   storeMarksheetHashOnBlockchain,
   BatchResult,
-  generateMarksheetHash
+  syncWithDatabase,
+  StudentData,
+  generateMarksheetHash,
 } from "../utils/blockchain";
 import { connectWallet } from "../utils/ConnectWallet";
 import { Contract } from "ethers";
@@ -164,6 +166,21 @@ const Home: React.FC = () => {
           grade: getGrade(Number(s.marks)),
         })),
       };
+
+      // Sync with MongoDB backend so the verifier app can fetch it
+      const marksObj: Record<string, string> = {};
+      subjects.forEach((s) => {
+        marksObj[s.name.trim()] = String(s.marks);
+      });
+
+      const studentForDb: StudentData = {
+        name: name.trim(),
+        enrollmentNumber: enrollmentNumber.trim(),
+        semester: semester,
+        marks: marksObj,
+      };
+      
+      await syncWithDatabase(studentForDb);
       const gradePoints = { O: 10, "A+": 9, A: 8, "B+": 7, B: 6, C: 5, P: 4, F: 0 };
       const totalGradePoints = studentDataForPdf.subjects.reduce(
         (total, s) => total + (gradePoints[s.grade as keyof typeof gradePoints] || 0), 0
@@ -172,7 +189,9 @@ const Home: React.FC = () => {
 
       localStorage.setItem("studentData", JSON.stringify(studentDataForPdf));
       localStorage.setItem("sgpa", sgpa);
-      const qrCodeData = generateMarksheetHash(subjects);
+      const hash = generateMarksheetHash(marksObj);
+      const verifierUrl = import.meta.env.VITE_VERIFIER_URL || "http://localhost:5176";
+      const qrCodeData = `${verifierUrl}/verify/${enrollmentNumber.trim()}/${semester}?hash=${hash}`;
       localStorage.setItem("qrCodeData", qrCodeData);
 
       handleSuccess("Marksheet generated successfully!");

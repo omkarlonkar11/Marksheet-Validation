@@ -24,6 +24,47 @@ export const generateMarksheetHash = (marks?: any): string => {
   return ethers.keccak256(ethers.toUtf8Bytes(dataToHash));
 };
 
+// --- Database Sync Utility ---
+export const syncWithDatabase = async (student: StudentData): Promise<void> => {
+  const getGrade = (marks: number): string => {
+    if (marks >= 80) return "O";
+    if (marks >= 70) return "A+";
+    if (marks >= 60) return "A";
+    if (marks >= 55) return "B+";
+    if (marks >= 50) return "B";
+    if (marks >= 45) return "C";
+    if (marks >= 40) return "P";
+    return "F";
+  };
+
+  const keys = Object.keys(student.marks || {});
+  const subjects = keys
+    .filter((key) => !["Enrollment Number", "Semester", "Name", "enrollmentNumber", "semester", "name"].includes(key) && key.trim() !== "")
+    .map((subjectName) => ({
+      name: subjectName,
+      grade: getGrade(Number(student.marks[subjectName]) || 0),
+    }));
+
+  if (subjects.length === 0) return; // Only save if subjects parsed correctly
+
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+    await fetch(`${backendUrl}/semester/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: student.name || "Student",
+        enrollmentNumber: student.enrollmentNumber.trim().toUpperCase(),
+        semesterNumber: Number(student.semester),
+        hash: generateMarksheetHash(student.marks),
+        subjects,
+      }),
+    });
+  } catch (error) {
+    console.error(`DB Sync failed for ${student.enrollmentNumber}:`, error);
+  }
+};
+
 export const generateQrCodeData = (marks: any): string => {
   return generateMarksheetHash(marks);
 };
@@ -114,8 +155,9 @@ export const processBulkMarksheets = async (
     
     let existingHashes: string[] = [];
     try {
-      // Use the batchGetStoredHashes function we saw in the Smart Contract
-      existingHashes = await contractInstance.batchGetStoredHashes(studentIdsForCheck);
+      const readProvider = new ethers.JsonRpcProvider(PUBLIC_RPC_URL);
+      const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readProvider);
+      existingHashes = await readContract.batchGetStoredHashes(studentIdsForCheck);
     } catch (error) {
       console.error("Error checking existence:", error);
       toast.dismiss(existenceCheckToastId);
@@ -129,10 +171,8 @@ export const processBulkMarksheets = async (
     const batch: StudentData[] = [];
     rawBatch.forEach((student, index) => {
       if (existingHashes[index] !== ethers.ZeroHash) {
-        failed.push({ 
-          student, 
-          error: "Record already exists on the blockchain." 
-        });
+        // If it already exists on the blockchain, we consider it a success since it's already verified
+        successful.push(student);
       } else {
         batch.push(student);
       }
@@ -190,6 +230,13 @@ export const processBulkMarksheets = async (
     }
   }
 
+  // --- NEW: Sync all successful records to the Backend Database ---
+  if (successful.length > 0) {
+    const syncToast = toast.loading("Syncing successful records with the database...");
+    await Promise.all(successful.map((student) => syncWithDatabase(student)));
+    toast.success("Database sync complete!", { id: syncToast });
+  }
+
   return { successful, failed, totalProcessed: successful.length + failed.length };
 };
 
@@ -202,7 +249,18 @@ export const storeMarksheetHashOnBlockchain = async (
   if (!contractInstance) return false;
   try {
     const studentId = `${enrollmentNumber.trim().toUpperCase()}-${semester.trim()}`;
-    const hash = generateMarksheetHash(subjects);
+    
+    let hash;
+    if (Array.isArray(subjects)) {
+      const marksObj: Record<string, string> = {};
+      subjects.forEach((s: any) => {
+        marksObj[s.name.trim()] = String(s.marks);
+      });
+      hash = generateMarksheetHash(marksObj);
+    } else {
+      hash = generateMarksheetHash(subjects);
+    }
+
     const tx = await contractInstance.storeHash(studentId, hash, { gasLimit: 500000 });
     await tx.wait();
     toast.success("Record saved successfully");

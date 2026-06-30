@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { verifyHashFromBlockchain } from "../utils/blockchain";
 import { toast } from "react-hot-toast";
 
@@ -19,6 +19,9 @@ export default function VerifyMarksheet() {
     enrollmentNumber?: string;
     semesterNumber?: string;
   }>();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const urlHash = searchParams.get("hash");
 
   const [semesterData, setSemesterData] = useState<SemesterData | null>(null);
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
@@ -58,6 +61,11 @@ export default function VerifyMarksheet() {
         console.log("Blockchain Response:", blockchainResponse);
 
         if (blockchainResponse) {
+          if (urlHash && data.hash.toLowerCase() !== urlHash.toLowerCase()) {
+            setIsVerified(false);
+            toast.error("Document verification failed: URL hash mismatch");
+            return;
+          }
           setSemesterData(data.semesterData);
           console.log(data.semesterData);
           setIsVerified(true);
