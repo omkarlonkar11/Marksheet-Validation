@@ -153,7 +153,7 @@ const MarksheetCard: React.FC<{ student: any }> = ({ student }) => {
       <div className="flex items-center justify-between p-6 border-t border-gray-300 bg-gray-50">
         <div>
           <QRCode
-            value={`https://marksheet-validation.pages.dev/verify/${student.enrollmentNumber}/${student.semester}`}
+            value={student.qrCodeData}
             size={80}
             level="H"
           />
