@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "react-qr-code";
-import { BatchResult, StudentData, generateMarksheetHash } from "../utils/blockchain";
-
-const VERIFIER_URL = import.meta.env.VITE_VERIFIER_URL || "http://localhost:5176";
+import {
+  BatchResult,
+  StudentData,
+  generateQrCodeData,
+} from "../utils/blockchain";
 
 // Helper function to calculate grades and SGPA for a single student
 const processStudentData = (student: StudentData) => {
@@ -37,7 +39,7 @@ const processStudentData = (student: StudentData) => {
   const totalGradePoints = subjects.reduce(
     (total, s) =>
       total + (gradePoints[s.grade as keyof typeof gradePoints] || 0),
-    0
+    0,
   );
   const sgpa =
     subjects.length > 0
@@ -149,7 +151,11 @@ const MarksheetCard: React.FC<{ student: any }> = ({ student }) => {
       {/* Footer */}
       <div className="flex items-center justify-between p-6 border-t border-gray-300 bg-gray-50">
         <div>
-          <QRCode value={student.qrCodeData} size={80} level="H" />
+          <QRCode
+            value={`https://marksheet-validation.pages.dev/verify/${student.enrollmentNumber}/${student.semester}`}
+            size={80}
+            level="H"
+          />
           <p className="text-gray-600 text-xs mt-1">Blockchain Verification</p>
         </div>
         <div className="flex flex-col">
@@ -183,12 +189,14 @@ export default function BulkMarksheets() {
       const studentData = JSON.parse(singleStudentStr);
       const sgpa = localStorage.getItem("sgpa") || "0.00";
       const qrCodeData = localStorage.getItem("qrCodeData") || "";
-      
-      setProcessedStudents([{
-        ...studentData,
-        sgpa,
-        qrCodeData
-      }]);
+
+      setProcessedStudents([
+        {
+          ...studentData,
+          sgpa,
+          qrCodeData,
+        },
+      ]);
       localStorage.removeItem("studentData");
       localStorage.removeItem("sgpa");
       localStorage.removeItem("qrCodeData");
