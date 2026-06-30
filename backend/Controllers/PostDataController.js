@@ -2,30 +2,22 @@ const UserModel = require("../Models/userdata"); // Semester Model
 
 const postdata = async (req, res) => {
   try {
-    const { name, enrollmentNumber, semesterNumber, subjects } = req.body;
+    const { name, enrollmentNumber, semesterNumber, subjects, hash } = req.body;
 
     // Validate required fields
     if (!semesterNumber || !subjects || !name || !enrollmentNumber) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // // Check if semester already exists for this user
-    const existingSemester = await UserModel.findOne({ enrollmentNumber, semesterNumber });
-    if (existingSemester) {
-      return res.status(400).json({ error: "Semester already exists for this user" });
-    }
-    // If semester doesn't exist, add a new semester
-    let newSemester = new UserModel({
-      name,
-      enrollmentNumber,
-      semesterNumber,
-      subjects,
-    });
+    // Upsert the semester: if it exists, update it. If not, create it.
+    const newSemester = await UserModel.findOneAndUpdate(
+      { enrollmentNumber, semesterNumber },
+      { name, enrollmentNumber, semesterNumber, subjects, hash },
+      { new: true, upsert: true }
+    );
 
-    await newSemester.save();
-
-    res.status(201).json({
-      message: "Semester added successfully",
+    res.status(200).json({
+      message: "Semester synchronized successfully",
       semester: newSemester,
     });
   } catch (error) {

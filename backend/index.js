@@ -13,7 +13,9 @@ const DataRouter = require("./Routes/SemesterRoute");
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "http://localhost:5176",
   "https://marksheet-validation.pages.dev",
+  "https://marksheet-verifier.pages.dev",
 ];
 
 // Now load the database connection after dotenv has been initialized

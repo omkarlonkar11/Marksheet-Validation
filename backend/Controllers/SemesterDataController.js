@@ -1,5 +1,4 @@
 const Semester = require("../Models/userdata");
-const { keccak256, toUtf8Bytes } = require("ethers"); // Correct import
 
 // Get a specific semester for a given enrollmentNumber
 exports.getSemesterData = async (req, res) => {
@@ -22,10 +21,8 @@ exports.getSemesterData = async (req, res) => {
 
     console.log(semester);
 
-    // Generate Keccak-256 hash
-    const hash = keccak256(
-      toUtf8Bytes(`${enrollmentNumber.trim()}-${semester.semesterNumber}`)
-    );
+    // Get the exact frontend-generated hash directly from DB
+    const hash = semester.hash;
 
     console.log("Hash:", hash);
 

@@ -9,6 +9,7 @@ const SemesterSchema = new mongoose.Schema({
   name: { type: String, required: true },
   enrollmentNumber: { type: String, required: true },
   semesterNumber: { type: Number, required: true },
+  hash: { type: String }, // Stored explicitly from frontend
   subjects: [SubjectSchema],
 }); 
 

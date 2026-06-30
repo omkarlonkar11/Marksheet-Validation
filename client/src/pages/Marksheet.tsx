@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "react-qr-code";
-import { BatchResult, StudentData, generateQrCodeData } from "../utils/blockchain";
+import { BatchResult, StudentData, generateMarksheetHash } from "../utils/blockchain";
+
+const VERIFIER_URL = import.meta.env.VITE_VERIFIER_URL || "http://localhost:5176";
 
 // Helper function to calculate grades and SGPA for a single student
 const processStudentData = (student: StudentData) => {
@@ -42,7 +44,9 @@ const processStudentData = (student: StudentData) => {
       ? (totalGradePoints / subjects.length).toFixed(2)
       : "0.00";
 
-  const qrCodeData = generateQrCodeData(student.marks);
+  // Generate a verification URL for the QR code instead of raw hash
+  const hash = generateMarksheetHash(student.marks);
+  const qrCodeData = `${VERIFIER_URL}/verify/${student.enrollmentNumber}/${student.semester}?hash=${hash}`;
 
   return { ...student, subjects, sgpa, qrCodeData };
 };
