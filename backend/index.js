@@ -28,10 +28,18 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+      
+      // Allow dynamic Cloudflare Pages preview URLs
+      if (
+        origin.endsWith(".marksheet-validation.pages.dev") ||
+        origin.endsWith(".marksheet-verifier.pages.dev")
+      ) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
